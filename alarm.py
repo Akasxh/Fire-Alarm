@@ -2,10 +2,33 @@
 # It's a simulator instead of a hardware sensor
 #run the code on the website; it will ring the alarm once the temperature is more than 57C
 
+from uagents import Agent, Bureau, Context, Model
 import dht
 import time
 import machine
 from machine import Pin
+
+#############################################
+class Message(Model):
+    message: str
+
+user = Agent(name='user',seed='safe')
+alarm = Agent(name='alarm',seed='fire')
+
+@user.on_interval(period=3.0)
+async def send_message(ctx: Context):
+    await ctx.send(alarm.address, Message(message="alarm working! Danger detected!"))
+
+@user.on_message(model=Message)
+async def user_message_response(ctx: Context, sender: str, msg: Message):
+    ctx.logger.info(f'Recieved message from {sender}: {msg.message}')
+
+
+jjk = Bureau()
+jjk.add(user)
+jjk.add(alarm)
+
+############################################
 
 led=Pin(15,Pin.OUT)
 buz1=machine.PWM(Pin(2,Pin.OUT))
@@ -27,6 +50,11 @@ while True:
   print("Humidity in the room :    ",humid)
   if(temp>57):   #temperature in degree Celsius at which fire accidents occur mostly.
     print("**FIRE ALERT**\n")
+    ############################
+    if __name__=="__main__":
+       jjk.run()
+    ############################
+
     print("TO STOP ALARM : PRESS RED BUTTON")
     while True:
       led.on()
