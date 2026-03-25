@@ -1,30 +1,99 @@
-# Fire-Alarm
+# Fire Alarm System
 
-Team: Hack-230569
+An IoT fire alarm system built on ESP32 (MicroPython) with a DHT22 temperature sensor, dual buzzers, LED indicator, and multi-agent communication using [uAgents](https://github.com/fetchai/uAgents). Triggers an alarm when the temperature exceeds 57 degrees C with manual reset via a physical button.
 
-Team Leader: S Akash
+```mermaid
+flowchart TB
+    subgraph "Sensors & Input"
+        DHT["DHT22\nTemperature + Humidity\n(Pin 13)"]
+        BTN["Push Button\n(Pin 18)\nAlarm Reset"]
+    end
 
-Other details of team at end of page.
+    subgraph "ESP32 Controller"
+        READ["Read Sensor\n(every 5s)"]
+        CHECK["Temp > 57°C?"]
+        AGENT["uAgents Bureau\nuser ↔ alarm\n(Message Passing)"]
+    end
 
-Be sure to create a virtual env for the uagents to work and if not working manually pip install uagents.
+    subgraph "Alert Outputs"
+        LED["Red LED\n(Pin 15)\nFlashing"]
+        BZ1["Buzzer 1\n(Pin 2, 1024 Hz)"]
+        BZ2["Buzzer 2\n(Pin 4, 512 Hz)"]
+    end
 
-Before using the code, make sure to set-up the circuit as follows:
+    DHT --> READ --> CHECK
+    CHECK -->|"Yes"| AGENT
+    CHECK -->|"Yes"| LED & BZ1 & BZ2
+    BTN -->|"Press"| CHECK
+    AGENT -.->|"Danger alert"| READ
 
--add DHT22,2*BUZZER,LED and BUTTON
+    style CHECK fill:#8b1a1a,color:#fff
+    style AGENT fill:#2d5016,color:#fff
+```
 
--now connect them as shown in the picture.
+## Features
 
-#In the simulation, it always has a temperature of 27C hence making it impossible to see the alarm going off
-<img width="319" alt="image" src="https://github.com/last-kenpachi/Fire-Alarm/assets/115539225/4d1bf666-7a6c-402d-8d6f-22397730b6f7">
+- **DHT22 Sensor** — Real-time temperature and humidity monitoring
+- **Dual-frequency Alarm** — Two buzzers at 1024 Hz and 512 Hz for distinct alert tones
+- **LED Indicator** — Flashing red LED during alarm state
+- **Agent Communication** — Fetch.ai uAgents framework for inter-agent messaging
+- **Manual Reset** — Physical push button to silence the alarm
+- **Configurable Threshold** — Default trigger at 57 degrees C (typical fire detection range)
 
-team leader name: S Akash
+## Circuit Setup
 
-team leader num: 8826332522
+| Component | ESP32 Pin | Details |
+|---|---|---|
+| DHT22 SDA | D13 | Temperature/humidity data |
+| DHT22 VCC | VIN | Power supply |
+| DHT22 GND | GND | Ground |
+| Red LED (+) | D15 | Alert indicator |
+| Buzzer 1 | D2 | 1024 Hz tone |
+| Buzzer 2 | D4 | 512 Hz tone |
+| Push Button | D18 | Alarm reset |
 
-team leader email:  drakathakash@gmail.com
+## Quick Start
 
-teammate 1: R Harshline
+### Wokwi Simulator
 
-teammate 2: Deepika A
+1. Go to [wokwi.com/projects/new/micropython-esp32](https://wokwi.com/projects/new/micropython-esp32)
+2. Paste `alarm.py` into the code editor
+3. Paste `CONNECTIONS.json` into the diagram tab
+4. Run the simulation
 
-teammate 3: Arnav Sinha
+> Note: The Wokwi simulator defaults to 27 degrees C ambient, so the alarm won't trigger automatically. Modify the threshold in code for testing.
+
+### Physical Hardware
+
+```bash
+# Install uAgents
+pip install uagents
+
+# Flash alarm.py to ESP32 via MicroPython
+```
+
+## Project Structure
+
+```
+Fire-Alarm/
+├── alarm.py            # Main program (sensor reading, agents, alarm logic)
+├── CONNECTIONS.json    # Wokwi circuit diagram (ESP32 + DHT22 + buzzers + LED + button)
+└── LICENSE
+```
+
+## Tech Stack
+
+- **MicroPython** (ESP32)
+- **DHT22** sensor
+- **Fetch.ai uAgents** framework
+- **Wokwi** simulator
+
+## Contributing
+
+1. Fork the repository
+2. Add features (SMS alerts, WiFi notifications, multi-sensor support)
+3. Submit a pull request
+
+## License
+
+This project is licensed under the GPL-3.0 License. See [LICENSE](LICENSE) for details.
